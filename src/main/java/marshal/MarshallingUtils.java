@@ -6,6 +6,9 @@ import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+/**
+ * Utilities for simple and convenient marshal / unmarshal.
+ */
 public class MarshallingUtils {
 
     private static final String UTF_8 = "UTF-8";
@@ -14,34 +17,46 @@ public class MarshallingUtils {
         // not used
     }
 
+    /**
+     * @param obj object for marshal
+     * @return string with marshaled object
+     */
     public static <T> String marshal(T obj) {
         Class clazz = getRealClass(obj);
         JAXBContext jc = getJaxbContext(clazz);
 
         StringWriter stringWriter = new StringWriter();
+
         try {
             Marshaller marshaller = jc.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_ENCODING, UTF_8);
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-            marshaller.marshal(obj, stringWriter);
 
-            return stringWriter.toString();
+            marshaller.marshal(obj, stringWriter);
         } catch (JAXBException e) {
             throw new MarshalUtilsException(e);
         }
+
+        return stringWriter.toString();
     }
 
-    public static <T> T unmarshal(Class<T> contextClass, String data) {
+    /**
+     * @param clazz class for unmarshal
+     * @param data  String with marshaled object
+     * @return unmarshaled object
+     */
+    public static <T> T unmarshal(Class<T> clazz, String data) {
         if (data == null || data.isEmpty()) {
             throw new MarshalUtilsException("No data to unmarshal!");
         }
 
-        JAXBContext context = getJaxbContext(contextClass);
+        JAXBContext context = getJaxbContext(clazz);
 
         StringReader reader = new StringReader(data);
+
         try {
             Unmarshaller unmarshaller = context.createUnmarshaller();
-            if (contextClass == null) {
+            if (clazz == null) {
                 Object result = unmarshaller.unmarshal(new StreamSource(reader));
                 if (result instanceof JAXBElement) {
                     return ((JAXBElement<T>) result).getValue();
@@ -49,7 +64,7 @@ public class MarshallingUtils {
                     return (T) result;
                 }
             } else {
-                return unmarshaller.unmarshal(new StreamSource(reader), contextClass).getValue();
+                return unmarshaller.unmarshal(new StreamSource(reader), clazz).getValue();
             }
         } catch (JAXBException e) {
             throw new MarshalUtilsException(e);

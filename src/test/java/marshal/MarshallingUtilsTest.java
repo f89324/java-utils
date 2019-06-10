@@ -5,6 +5,9 @@ import org.junit.Test;
 
 import javax.xml.bind.JAXBElement;
 
+/**
+ * @see marshal.MarshallingUtils
+ */
 public class MarshallingUtilsTest {
 
     @Test
